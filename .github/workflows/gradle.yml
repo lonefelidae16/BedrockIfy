@@ -21,8 +21,8 @@ jobs:
       if: always()
       uses: actions/upload-artifact@v4
       with:
-        name: DingusPPC-MSBUILD
-        path: .
+        name: bedrockify
+        path: ${{github.workspace}}/build/libs/
 
 
 
