@@ -2,16 +2,14 @@ package me.juancarloscp52.bedrockify.mixin.client.features.fishingBobber;
 
 import me.juancarloscp52.bedrockify.client.BedrockifyClient;
 import me.juancarloscp52.bedrockify.client.features.fishingBobber.FishingBobber3DModel;
-import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.model.Model;
 import net.minecraft.client.render.OverlayTexture;
 import net.minecraft.client.render.VertexConsumer;
 import net.minecraft.client.render.VertexConsumerProvider;
-import net.minecraft.client.render.entity.EntityRenderer;
 import net.minecraft.client.render.entity.EntityRendererFactory;
 import net.minecraft.client.render.entity.FishingBobberEntityRenderer;
+import net.minecraft.client.render.entity.state.FishingBobberEntityState;
 import net.minecraft.client.util.math.MatrixStack;
-import net.minecraft.entity.projectile.FishingBobberEntity;
 import net.minecraft.util.Colors;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
@@ -20,12 +18,13 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(FishingBobberEntityRenderer.class)
-public abstract class FishingBobberEntityRendererMixin extends EntityRenderer<FishingBobberEntity> {
+public abstract class FishingBobberEntityRendererMixin {
     @Unique
-    private final Model bobberModel = new FishingBobber3DModel<>(MinecraftClient.getInstance().getEntityModelLoader().getModelPart(FishingBobber3DModel.MODEL_LAYER));
+    private Model bobberModel;
 
-    protected FishingBobberEntityRendererMixin(EntityRendererFactory.Context ctx) {
-        super(ctx);
+    @Inject(method = "<init>", at = @At("RETURN"))
+    private void bedrockify$injectCtor(EntityRendererFactory.Context context, CallbackInfo ci) {
+        this.bobberModel = new FishingBobber3DModel<>(context.getPart(FishingBobber3DModel.MODEL_LAYER));
     }
 
     @Inject(method = "vertex", at = @At("HEAD"), cancellable = true)
@@ -38,7 +37,7 @@ public abstract class FishingBobberEntityRendererMixin extends EntityRenderer<Fi
     }
 
     @Inject(method = "render", at = @At("RETURN"))
-    private void bedrockify$render3DBobber(FishingBobberEntity fishingBobberEntity, float f, float g, MatrixStack matrixStack, VertexConsumerProvider vertexConsumerProvider, int light, CallbackInfo ci) {
+    private void bedrockify$render3DBobber(FishingBobberEntityState fishingBobberEntityState, MatrixStack matrixStack, VertexConsumerProvider vertexConsumerProvider, int light, CallbackInfo ci) {
         if (!BedrockifyClient.getInstance().settings.fishingBobber3D) {
             return;
         }

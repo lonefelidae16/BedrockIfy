@@ -6,14 +6,11 @@
     "###"
   ],
   "key": {
-    "#": {
-      "item": "minecraft:acacia_planks"
-    },
-    "S": {
-      "item": "minecraft:wooden_shovel"
-    }
+    "#": "minecraft:acacia_planks",
+    "S": "minecraft:wooden_shovel"
   },
   "result": {
-    "id": "minecraft:acacia_boat"
+    "id": "minecraft:acacia_boat",
+    "count": 1
   }
 }

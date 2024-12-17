@@ -1,12 +1,14 @@
 package me.juancarloscp52.bedrockify.client.features.heldItemTooltips;
 
 import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
 import me.juancarloscp52.bedrockify.client.BedrockifyClient;
 import me.juancarloscp52.bedrockify.client.BedrockifyClientSettings;
 import me.juancarloscp52.bedrockify.client.features.heldItemTooltips.tooltip.ContainerTooltip;
 import me.juancarloscp52.bedrockify.client.features.heldItemTooltips.tooltip.EnchantmentTooltip;
 import me.juancarloscp52.bedrockify.client.features.heldItemTooltips.tooltip.PotionTooltip;
 import me.juancarloscp52.bedrockify.client.features.heldItemTooltips.tooltip.Tooltip;
+import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.font.TextRenderer;
 import net.minecraft.client.gui.DrawContext;
@@ -22,12 +24,15 @@ import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.math.MathHelper;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
 public class HeldItemTooltips {
 
     private final int  tooltipSize = 6;
+
+    private static final boolean B_DAB_LOADED = FabricLoader.getInstance().isModLoaded("detailab");
 
     public int drawItemWithCustomTooltips(DrawContext drawContext, TextRenderer fontRenderer, Text text, float x, float y, int color, ItemStack currentStack) {
         final BedrockifyClientSettings settings = BedrockifyClient.getInstance().settings;
@@ -40,7 +45,7 @@ public class HeldItemTooltips {
             return 0;
         if(MinecraftClient.getInstance().interactionManager.hasStatusBars()){
             y-=16;
-            if(player.getArmor()>0){
+            if(player.getArmor()>0 || (B_DAB_LOADED && Sets.newHashSet(player.getArmorItems()).stream().anyMatch(stack -> stack.contains(DataComponentTypes.GLIDER)))){
                 y-=10;
             }
             if(player.getAbsorptionAmount()>0){
@@ -91,7 +96,7 @@ public class HeldItemTooltips {
      * @param currentStack Current item stack of the player.
      * @return List with the tooltip information.
      */
-    public List<Tooltip> getTooltips(ItemStack currentStack) {
+    public static List<Tooltip> getTooltips(ItemStack currentStack) {
         final Item item = currentStack.getItem();
         final List<Tooltip> result = Lists.newArrayList();
         //If the item is a enchanted book, retrieve the enchantments.
@@ -104,6 +109,13 @@ public class HeldItemTooltips {
             // Lingering Potion has its own multiplier of duration, and it is hardcoded.
             item.appendTooltip(currentStack, Item.TooltipContext.DEFAULT, generated, TooltipType.BASIC);
             generateTooltipsForPotion(generated, result);
+        } else if (item == Items.OMINOUS_BOTTLE) {
+            var ominousComponent = currentStack.getComponents().get(DataComponentTypes.OMINOUS_BOTTLE_AMPLIFIER);
+            if (ominousComponent != null) {
+                List<Text> generated = Lists.newArrayList();
+                ominousComponent.appendTooltip(Item.TooltipContext.DEFAULT, generated::add, TooltipType.BASIC);
+                generateTooltipsForPotion(generated, result);
+            }
         } else if(currentStack.getComponents().contains(DataComponentTypes.CONTAINER)){
             var container = currentStack.getComponents().get(DataComponentTypes.CONTAINER);
             if(container != null){

@@ -6,14 +6,11 @@
     "PSP"
   ],
   "key": {
-    "P": {
-      "item": "minecraft:stick"
-    },
-    "S": {
-      "tag": "minecraft:wooden_slabs"
-    }
+    "P": "minecraft:stick",
+    "S": "#minecraft:wooden_slabs"
   },
   "result": {
-    "id": "minecraft:barrel"
+    "id": "minecraft:barrel",
+    "count": 1
   }
 }

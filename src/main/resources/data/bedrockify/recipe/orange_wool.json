@@ -2,14 +2,11 @@
   "type": "minecraft:crafting_shapeless",
   "group": "wool",
   "ingredients": [
-    {
-      "item": "minecraft:orange_dye"
-    },
-    {
-      "tag": "minecraft:wool"
-    }
+    "minecraft:orange_dye",
+    "#minecraft:wool"
   ],
   "result": {
-    "id": "minecraft:orange_wool"
+    "id": "minecraft:orange_wool",
+    "count": 1
   }
 }

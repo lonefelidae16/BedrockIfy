@@ -1,5 +1,6 @@
 package me.juancarloscp52.bedrockify.mixin.client.features.screenSafeArea;
 
+import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import com.mojang.blaze3d.systems.RenderSystem;
@@ -16,6 +17,8 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.*;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+
+import java.util.function.Function;
 
 @Environment(EnvType.CLIENT)
 @Mixin(InGameHud.class)
@@ -34,29 +37,29 @@ public abstract class InGameHudMixin {
     /**
      * Render the item Hotbar applying the screen border distance and transparency.
      */
-    @WrapOperation(method = "renderHotbar", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/DrawContext;drawGuiTexture(Lnet/minecraft/util/Identifier;IIII)V"))
-    private void drawTextureHotbar(DrawContext drawContext, Identifier texture, int x, int y, int width, int height, Operation<Void> original) {
+    @WrapOperation(method = "renderHotbar", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/DrawContext;drawGuiTexture(Ljava/util/function/Function;Lnet/minecraft/util/Identifier;IIII)V"))
+    private void drawTextureHotbar(DrawContext drawContext, Function<?, ?> function, Identifier texture, int x, int y, int width, int height, Operation<Void> original) {
         if(texture.equals(Identifier.ofVanilla("hud/hotbar_selection"))){
-            original.call(drawContext, texture, x, y - screenBorder, width, height);
+            original.call(drawContext, function, texture, x, y - screenBorder, width, height);
             if(BedrockifyClient.getInstance().settings.hotBarOverhang)
-                drawContext.fill(x,y + height - screenBorder,x+width,y+height+1 - screenBorder, ColorHelper.Argb.getArgb(255,0,0,0));
+                drawContext.fill(x,y + height - screenBorder,x+width,y+height+1 - screenBorder, ColorHelper.getArgb(255,0,0,0));
         }else{
             RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, BedrockifyClient.getInstance().hudOpacity.getHudOpacity(true));
             RenderSystem.enableBlend();
             RenderSystem.defaultBlendFunc();
-            original.call(drawContext,texture, x, y - screenBorder, width, height);
+            original.call(drawContext, function, texture, x, y - screenBorder, width, height);
             RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, BedrockifyClient.getInstance().hudOpacity.getHudOpacity(false));
         }
     }
-    @WrapOperation(method = "renderHotbar", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/DrawContext;drawGuiTexture(Lnet/minecraft/util/Identifier;IIIIIIII)V"))
-    private void drawTextureHotbar(DrawContext drawContext, Identifier texture, int i, int j, int k, int l, int x, int y, int width, int height, Operation<Void> original) {
+    @WrapOperation(method = "renderHotbar", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/DrawContext;drawGuiTexture(Ljava/util/function/Function;Lnet/minecraft/util/Identifier;IIIIIIII)V"))
+    private void drawTextureHotbar(DrawContext drawContext, Function<?, ?> function, Identifier texture, int i, int j, int k, int l, int x, int y, int width, int height, Operation<Void> original) {
         if((width ==29 && height == 24) || width == 182){
             RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, BedrockifyClient.getInstance().hudOpacity.getHudOpacity(true));
-            original.call(drawContext, texture, i, j, k, l, x, y - screenBorder, width, height);
+            original.call(drawContext, function, texture, i, j, k, l, x, y - screenBorder, width, height);
             RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, BedrockifyClient.getInstance().hudOpacity.getHudOpacity(false));
         }else{
             boolean raisedEnabled = FabricLoader.getInstance().isModLoaded("raised");
-            original.call(drawContext, texture, i, j, k, l, x, y - screenBorder, width, (width  == 24 && !raisedEnabled) ? height+2 : height);
+            original.call(drawContext, function, texture, i, j, k, l, x, y - screenBorder, width, (width  == 24 && !raisedEnabled) ? height+2 : height);
         }
     }
 
@@ -71,12 +74,12 @@ public abstract class InGameHudMixin {
     /**
      * Apply screen border offset to experience bars.
      */
-    @ModifyArg(method = "renderExperienceBar", at = @At(value = "INVOKE",target = "Lnet/minecraft/client/gui/DrawContext;drawGuiTexture(Lnet/minecraft/util/Identifier;IIII)V"),index = 2)
+    @ModifyArg(method = "renderExperienceBar", at = @At(value = "INVOKE",target = "Lnet/minecraft/client/gui/DrawContext;drawGuiTexture(Ljava/util/function/Function;Lnet/minecraft/util/Identifier;IIII)V"),index = 3)
     public int modifyTextureExperienceBar(int y){
         return y - screenBorder;
     }
 
-    @ModifyArg(method = "renderExperienceBar", at = @At(value = "INVOKE",target = "Lnet/minecraft/client/gui/DrawContext;drawGuiTexture(Lnet/minecraft/util/Identifier;IIIIIIII)V"),index = 6)
+    @ModifyArg(method = "renderExperienceBar", at = @At(value = "INVOKE",target = "Lnet/minecraft/client/gui/DrawContext;drawGuiTexture(Ljava/util/function/Function;Lnet/minecraft/util/Identifier;IIIIIIII)V"),index = 7)
     public int modifyTextureExperienceBar2(int y){
         return y - screenBorder;
     }
@@ -94,20 +97,20 @@ public abstract class InGameHudMixin {
 
         if(color == 0)
             return 0;
-        return drawContext.drawTextWithShadow(textRenderer, text, x, y-screenBorder-3, ColorHelper.Argb.getArgb(alpha,127, 252, 32));
+        return drawContext.drawTextWithShadow(textRenderer, text, x, y-screenBorder-3, ColorHelper.getArgb(alpha,127, 252, 32));
     }
 
     /**
      * Apply screen border offset to mount bars.
      */
-    @ModifyArg(method = "renderMountJumpBar", at = @At(value = "INVOKE",target = "Lnet/minecraft/client/gui/DrawContext;drawGuiTexture(Lnet/minecraft/util/Identifier;IIIIIIII)V"),index = 6)
+    @ModifyArg(method = "renderMountJumpBar", at = @At(value = "INVOKE",target = "Lnet/minecraft/client/gui/DrawContext;drawGuiTexture(Ljava/util/function/Function;Lnet/minecraft/util/Identifier;IIIIIIII)V"),index = 7)
     public int modifyTextureMountJumpBar(int y){
         return y-screenBorder;
     }
     /**
      * Apply screen border offset to mount bars.
      */
-    @ModifyArg(method = "renderMountJumpBar", at = @At(value = "INVOKE",target = "Lnet/minecraft/client/gui/DrawContext;drawGuiTexture(Lnet/minecraft/util/Identifier;IIII)V"),index = 2)
+    @ModifyArg(method = "renderMountJumpBar", at = @At(value = "INVOKE",target = "Lnet/minecraft/client/gui/DrawContext;drawGuiTexture(Ljava/util/function/Function;Lnet/minecraft/util/Identifier;IIII)V"),index = 3)
     public int modifyTextureMountJumpBar2(int y){
         return y-screenBorder;
     }
@@ -115,17 +118,9 @@ public abstract class InGameHudMixin {
     /**
      * Apply screen border offset to mount health bars.
      */
-    @ModifyArg(method = "renderMountHealth", at = @At(value = "INVOKE",target = "Lnet/minecraft/client/gui/DrawContext;drawGuiTexture(Lnet/minecraft/util/Identifier;IIII)V"),index = 2)
+    @ModifyArg(method = "renderMountHealth", at = @At(value = "INVOKE",target = "Lnet/minecraft/client/gui/DrawContext;drawGuiTexture(Ljava/util/function/Function;Lnet/minecraft/util/Identifier;IIII)V"),index = 3)
     public int modifyTextureMountHealth(int y){
         return y-screenBorder;
-    }
-
-    /**
-     * Apply screen border offset to status bars.
-     */
-    @ModifyArg(method = "renderStatusBars", at = @At(value = "INVOKE",target = "Lnet/minecraft/client/gui/DrawContext;drawGuiTexture(Lnet/minecraft/util/Identifier;IIII)V"),index = 2)
-    public int modifyTextureStatusBar(int y){
-        return y - screenBorder;
     }
 
     /**
@@ -168,4 +163,8 @@ public abstract class InGameHudMixin {
         return y-screenBorder;
     }
 
+    @ModifyExpressionValue(method = "renderAirBubbles", at = @At(value = "INVOKE",target = "Lnet/minecraft/client/gui/hud/InGameHud;getAirBubbleY(II)I"))
+    private int bedrockify$modifyTextureStatusBarsBubbleY(int original){
+        return original - screenBorder;
+    }
 }

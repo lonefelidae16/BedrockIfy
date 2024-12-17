@@ -2,14 +2,11 @@
   "type": "minecraft:crafting_shapeless",
   "group": "dyed_bed",
   "ingredients": [
-    {
-      "tag": "minecraft:beds"
-    },
-    {
-      "item": "minecraft:lime_dye"
-    }
+    "#minecraft:beds",
+    "minecraft:lime_dye"
   ],
   "result": {
-    "id": "minecraft:lime_bed"
+    "id": "minecraft:lime_bed",
+    "count": 1
   }
 }

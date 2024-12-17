@@ -6,14 +6,11 @@
     "###"
   ],
   "key": {
-    "#": {
-      "item": "minecraft:oak_planks"
-    },
-    "S": {
-      "item": "minecraft:wooden_shovel"
-    }
+    "#": "minecraft:oak_planks",
+    "S": "minecraft:wooden_shovel"
   },
   "result": {
-    "id": "minecraft:oak_boat"
+    "id": "minecraft:oak_boat",
+    "count": 1
   }
 }

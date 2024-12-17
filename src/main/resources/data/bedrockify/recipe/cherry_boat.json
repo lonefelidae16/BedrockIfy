@@ -7,15 +7,12 @@
     "###"
   ],
   "key": {
-    "#": {
-      "item": "minecraft:cherry_planks"
-    },
-    "S": {
-      "item": "minecraft:wooden_shovel"
-    }
+    "#": "minecraft:cherry_planks",
+    "S": "minecraft:wooden_shovel"
   },
   "result": {
-    "id": "minecraft:cherry_boat"
+    "id": "minecraft:cherry_boat",
+    "count": 1
   },
   "show_notification": true
 }

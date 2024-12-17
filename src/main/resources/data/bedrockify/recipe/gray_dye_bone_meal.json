@@ -1,12 +1,8 @@
 {
   "type": "minecraft:crafting_shapeless",
   "ingredients": [
-    {
-      "item": "minecraft:black_dye"
-    },
-    {
-      "item": "minecraft:bone_meal"
-    }
+    "minecraft:black_dye",
+    "minecraft:bone_meal"
   ],
   "result": {
     "count": 2,

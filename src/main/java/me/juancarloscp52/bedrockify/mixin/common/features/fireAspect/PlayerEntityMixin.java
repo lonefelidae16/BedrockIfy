@@ -1,38 +1,37 @@
 package me.juancarloscp52.bedrockify.mixin.common.features.fireAspect;
 
+import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
 import me.juancarloscp52.bedrockify.Bedrockify;
-import net.minecraft.enchantment.EnchantmentHelper;
+import me.juancarloscp52.bedrockify.common.features.fireAspectLight.FireAspectLightHelper;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.vehicle.TntMinecartEntity;
-import net.minecraft.item.EnchantedBookItem;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.sound.SoundCategory;
 import net.minecraft.sound.SoundEvents;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.Hand;
-import net.minecraft.util.Identifier;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
-import org.spongepowered.asm.mixin.injection.Redirect;
 
 @Mixin(PlayerEntity.class)
 public class PlayerEntityMixin {
 
-    @Redirect(method = "interact",at=@At(value = "INVOKE",target = "Lnet/minecraft/entity/Entity;interact(Lnet/minecraft/entity/player/PlayerEntity;Lnet/minecraft/util/Hand;)Lnet/minecraft/util/ActionResult;"))
-    private ActionResult interact(Entity entity, PlayerEntity player, Hand hand){
-        if(entity instanceof TntMinecartEntity tntMinecart && Bedrockify.getInstance().settings.fireAspectLight){
-            ItemStack itemStack = player.getStackInHand(hand);
-            if(null != itemStack && !tntMinecart.isPrimed()  && (((itemStack.hasEnchantments() || itemStack.getItem() instanceof EnchantedBookItem) && EnchantmentHelper.getEnchantments(itemStack).getEnchantments().stream().anyMatch(e -> e.matchesId(Identifier.of("fire_aspect")))) || (itemStack.isOf(Items.FLINT_AND_STEEL) || itemStack.isOf(Items.FIRE_CHARGE)))){
+    @ModifyExpressionValue(method = "interact",at=@At(value = "INVOKE",target = "Lnet/minecraft/entity/Entity;interact(Lnet/minecraft/entity/player/PlayerEntity;Lnet/minecraft/util/Hand;)Lnet/minecraft/util/ActionResult;"))
+    private ActionResult interact(ActionResult original, Entity entity, Hand hand){
+        PlayerEntity $this = PlayerEntity.class.cast(this);
+        if(entity instanceof TntMinecartEntity tntMinecart && Bedrockify.getInstance().settings.fireAspectLight && $this.getAbilities().allowModifyWorld){
+            ItemStack itemStack = $this.getStackInHand(hand);
+            if(!tntMinecart.isPrimed() && (FireAspectLightHelper.canLitWith(itemStack) || (itemStack.isOf(Items.FLINT_AND_STEEL) || itemStack.isOf(Items.FIRE_CHARGE)))){
                 tntMinecart.prime();
-                itemStack.damage(1, player, LivingEntity.getSlotForHand(hand));
-                player.getWorld().playSound(player, player.getBlockPos(), SoundEvents.ITEM_FLINTANDSTEEL_USE, SoundCategory.BLOCKS, 1.0F, player.getWorld().getRandom().nextFloat() * 0.4F + 0.8F);
+                itemStack.damage(1, $this, LivingEntity.getSlotForHand(hand));
+                $this.getWorld().playSound($this, $this.getBlockPos(), SoundEvents.ITEM_FLINTANDSTEEL_USE, SoundCategory.BLOCKS, 1.0F, $this.getWorld().getRandom().nextFloat() * 0.4F + 0.8F);
                 return ActionResult.SUCCESS;
             }
         }
-        return entity.interact(player, hand);
+        return original;
     }
 
 }

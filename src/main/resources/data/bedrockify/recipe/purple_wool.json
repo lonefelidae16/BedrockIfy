@@ -2,14 +2,11 @@
   "type": "minecraft:crafting_shapeless",
   "group": "wool",
   "ingredients": [
-    {
-      "item": "minecraft:purple_dye"
-    },
-    {
-      "tag": "minecraft:wool"
-    }
+    "minecraft:purple_dye",
+    "#minecraft:wool"
   ],
   "result": {
-    "id": "minecraft:purple_wool"
+    "id": "minecraft:purple_wool",
+    "count": 1
   }
 }

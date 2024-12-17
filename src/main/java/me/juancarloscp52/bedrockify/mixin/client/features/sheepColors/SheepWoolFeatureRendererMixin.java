@@ -10,6 +10,7 @@ import net.minecraft.client.render.entity.feature.FeatureRenderer;
 import net.minecraft.client.render.entity.feature.FeatureRendererContext;
 import net.minecraft.client.render.entity.feature.SheepWoolFeatureRenderer;
 import net.minecraft.client.render.entity.model.SheepEntityModel;
+import net.minecraft.client.render.entity.state.SheepEntityRenderState;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.entity.passive.SheepEntity;
 import net.minecraft.util.DyeColor;
@@ -20,32 +21,32 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(SheepWoolFeatureRenderer.class)
-public abstract class SheepWoolFeatureRendererMixin extends FeatureRenderer<SheepEntity, SheepEntityModel<SheepEntity>> {
-    public SheepWoolFeatureRendererMixin(FeatureRendererContext<SheepEntity, SheepEntityModel<SheepEntity>> context) {
+public abstract class SheepWoolFeatureRendererMixin extends FeatureRenderer<SheepEntityRenderState, SheepEntityModel> {
+    public SheepWoolFeatureRendererMixin(FeatureRendererContext<SheepEntityRenderState, SheepEntityModel> context) {
         super(context);
     }
 
-    @Inject(method = "render(Lnet/minecraft/client/util/math/MatrixStack;Lnet/minecraft/client/render/VertexConsumerProvider;ILnet/minecraft/entity/passive/SheepEntity;FFFFFF)V", at = @At("RETURN"))
-    private void bedrockify$renderWoolColorAfterShearing(MatrixStack matrixStack, VertexConsumerProvider vertexConsumerProvider, int light, SheepEntity sheepEntity, float limbAngle, float limbDistance, float tickDelta, float animationProgress, float headYaw, float headPitch, CallbackInfo ci) {
-        if (!BedrockifyClient.getInstance().settings.sheepColors || SheepSkinResource.TEXTURE_SHEARED == null) {
+    @Inject(method = "render(Lnet/minecraft/client/util/math/MatrixStack;Lnet/minecraft/client/render/VertexConsumerProvider;ILnet/minecraft/client/render/entity/state/SheepEntityRenderState;FF)V", at = @At("RETURN"))
+    private void bedrockify$renderWoolColorAfterShearing(MatrixStack matrixStack, VertexConsumerProvider vertexConsumerProvider, int light, SheepEntityRenderState sheepState, float tickDelta, float animationProgress, CallbackInfo ci) {
+        if (!BedrockifyClient.getInstance().settings.sheepColors) {
             return;
         }
 
         final Model sheepModel = this.getContextModel();
         final int color;
-        if (sheepEntity.hasCustomName() && "jeb_".equals(sheepEntity.getName().getString())) {
-            final int baseColorId = sheepEntity.age / 25 + sheepEntity.getId();
+        if (sheepState.customName != null && "jeb_".equals(sheepState.customName.getString())) {
+            final int baseColorId = (int) (sheepState.age / 25 + sheepState.id);
             final int colorLength = DyeColor.values().length;
             final int currentColorId = baseColorId % colorLength;
             final int nextColorId = (baseColorId + 1) % colorLength;
-            float gradientDelta = ((float)(sheepEntity.age % 25) + tickDelta) / 25.0f;
+            float gradientDelta = ((sheepState.age % 25) + tickDelta) / 25.0f;
             int currentColor = SheepEntity.getRgbColor(DyeColor.byId(currentColorId));
             int nextColor = SheepEntity.getRgbColor(DyeColor.byId(nextColorId));
-            color = ColorHelper.Argb.lerp(gradientDelta, currentColor, nextColor);
+            color = ColorHelper.lerp(gradientDelta, currentColor, nextColor);
         } else {
-            color = SheepEntity.getRgbColor(sheepEntity.getColor());
+            color = SheepEntity.getRgbColor(sheepState.color);
         }
         VertexConsumer vertexConsumer = vertexConsumerProvider.getBuffer(sheepModel.getLayer(SheepSkinResource.TEXTURE_SHEARED));
-        sheepModel.render(matrixStack, vertexConsumer, light, LivingEntityRenderer.getOverlay(sheepEntity, 0.075f), color);
+        sheepModel.render(matrixStack, vertexConsumer, light, LivingEntityRenderer.getOverlay(sheepState, 0.075f), color);
     }
 }

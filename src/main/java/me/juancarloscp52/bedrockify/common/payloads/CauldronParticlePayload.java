@@ -11,6 +11,8 @@ import net.minecraft.particle.ParticleTypes;
 import net.minecraft.registry.Registries;
 import net.minecraft.util.Identifier;
 
+import java.util.Objects;
+
 public final class CauldronParticlePayload extends AbstractVelocityParticlePayload {
     private Identifier particleType;
 
@@ -47,7 +49,7 @@ public final class CauldronParticlePayload extends AbstractVelocityParticlePaylo
             }
             final MinecraftClient client = context.client();
             try {
-                var particle = Registries.PARTICLE_TYPE.get(payload.particleType);
+                var particle = Objects.requireNonNull(Registries.PARTICLE_TYPE.get(payload.particleType));
                 double x = payload.position.x;
                 double y = payload.position.y;
                 double z = payload.position.z;

@@ -14,8 +14,9 @@ import net.minecraft.entity.EntityPose;
 import net.minecraft.util.math.MathHelper;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
+import org.spongepowered.include.com.google.common.collect.Sets;
 
-import java.util.Arrays;
+import java.util.Set;
 
 public class PaperDoll {
     private final MinecraftClient client;
@@ -23,6 +24,9 @@ public class PaperDoll {
     private int posY = 60;
     private long lastTimeShown = 0;
     private BedrockifyClientSettings settings;
+
+    private static final Set<String> TARGET_POSE_NAMES = Sets.newHashSet(EntityPose.GLIDING.name(), EntityPose.SWIMMING.name(), "CRAWLING");
+
     /**
      * Uses in method <code>drawPaperDoll</code>; the custom shading vectors.
      *
@@ -31,11 +35,11 @@ public class PaperDoll {
      */
     private static final Vector3f FLAT_LIT_VEC1 = (new Vector3f(0.2F, 0.5F, -0.7F)).normalize();
     private static final Vector3f FLAT_LIT_VEC2 = (new Vector3f(-0.2F, 0.5F, 0.7F)).normalize();
+
     public PaperDoll(MinecraftClient client) {
         this.client = client;
     }
 
-    private static final boolean supportsCrawling = Arrays.stream(EntityPose.values()).anyMatch(pose -> pose.name().equals("CRAWLING"));
     /**
      * Render the player at the top left of the screen.
      * The player will be rendered only when the player is not riding another entity, and it is sneaking, running, using elytra, using an item, underwater, or using a shield.
@@ -59,13 +63,29 @@ public class PaperDoll {
 
         if (client.player != null) {
             //If the player does an action that must show the player entity gui, set the counter to the current time.
-            if (client.player.isSneaking() || client.player.isSubmergedInWater() || client.player.getPose().equals(EntityPose.SWIMMING) || client.player.isSprinting() || client.player.getAbilities().flying || client.player.isFallFlying() || client.player.isBlocking() || client.player.isUsingItem() || (supportsCrawling && client.player.getPose() == EntityPose.valueOf("CRAWLING")))
+            if (shouldShow(client.player))
                 lastTimeShown = System.currentTimeMillis();
 
             // If the difference between the current game ticks and showTicks is less than 100 ticks, draw the player entity.
             if ((!client.player.isRiding() && !client.player.isSleeping() && System.currentTimeMillis() - lastTimeShown < 2000))
                 drawPaperDoll(drawContext);
         }
+    }
+
+    /**
+     * Checks player's action.
+     *
+     * @param player An instance of a {@link ClientPlayerEntity}.
+     * @return {@code true} if condition matches.
+     */
+    private static boolean shouldShow(ClientPlayerEntity player) {
+        return player.isSneaking() ||
+                player.isSprinting() ||
+                player.isSubmergedInWater() ||
+                player.getAbilities().flying ||  // flying in Creative mode
+                player.isBlocking() ||
+                player.isUsingItem() ||
+                TARGET_POSE_NAMES.contains(player.getPose().name());
     }
 
     /**
@@ -81,7 +101,7 @@ public class PaperDoll {
 
         int renderPosY = posY;
         // If the player is elytra flying, the entity must be manually centered depending on the pitch.
-        if (player.isFallFlying())
+        if (player.getPose().equals(EntityPose.GLIDING))
             renderPosY = posY - MathHelper.ceil(size * 2 * toMaxAngleRatio(player.getPitch()));
         // If the player is swimming, the entity must also be centered in the Y axis.
         else if (player.isSwimming()) {
@@ -104,7 +124,7 @@ public class PaperDoll {
 
         // Set the entity desired rotation for drawing.
         float angle = 145;
-        if (player.isFallFlying() || player.isBlocking()) {
+        if (player.getPose().equals(EntityPose.GLIDING) || player.isBlocking()) {
             player.headYaw = angle;
         } else {
             player.setYaw(headYaw - bodyYaw + angle);
@@ -119,7 +139,7 @@ public class PaperDoll {
         EntityRenderDispatcher entityRenderDispatcher = MinecraftClient.getInstance().getEntityRenderDispatcher();
         entityRenderDispatcher.setRenderShadows(false);
         VertexConsumerProvider.Immediate immediate = MinecraftClient.getInstance().getBufferBuilders().getEntityVertexConsumers();
-        RenderSystem.runAsFancy(() -> entityRenderDispatcher.render(player, 0, 0, 0, 0.0F, 1.0F, matrixStack, immediate, 0xF000F0));
+        entityRenderDispatcher.render(player, 0, 0, 0, 1.0F, matrixStack, immediate, 0xF000F0);
         immediate.draw();
         entityRenderDispatcher.setRenderShadows(true);
 

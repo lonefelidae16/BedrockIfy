@@ -10,8 +10,8 @@ import net.minecraft.block.cauldron.CauldronBehavior;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
+import net.minecraft.util.ActionResult;
 import net.minecraft.util.Hand;
-import net.minecraft.util.ItemActionResult;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
@@ -24,16 +24,16 @@ public abstract class AbstractBECauldronBlock extends AbstractCauldronBlock impl
     }
 
     @Override
-    public ItemActionResult onUseWithItem(ItemStack stack, BlockState state, World world, BlockPos pos, PlayerEntity player, Hand hand, BlockHitResult hit) {
+    public ActionResult onUseWithItem(ItemStack stack, BlockState state, World world, BlockPos pos, PlayerEntity player, Hand hand, BlockHitResult hit) {
         if (!Bedrockify.getInstance().settings.bedrockCauldron) {
-            return ItemActionResult.FAIL;
+            return ActionResult.FAIL;
         }
 
         return super.onUseWithItem(stack, state, world, pos, player, hand, hit);
     }
 
     @Override
-    public ItemStack getPickStack(WorldView world, BlockPos pos, BlockState state) {
+    protected ItemStack getPickStack(WorldView world, BlockPos pos, BlockState state, boolean includeData) {
         return new ItemStack(Blocks.CAULDRON);
     }
 

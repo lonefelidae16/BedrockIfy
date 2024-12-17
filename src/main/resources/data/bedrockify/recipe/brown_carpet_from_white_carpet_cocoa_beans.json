@@ -7,12 +7,8 @@
     "###"
   ],
   "key": {
-    "#": {
-      "item": "minecraft:white_carpet"
-    },
-    "$": {
-      "item": "minecraft:cocoa_beans"
-    }
+    "#": "minecraft:white_carpet",
+    "$": "minecraft:cocoa_beans"
   },
   "result": {
     "count": 8,

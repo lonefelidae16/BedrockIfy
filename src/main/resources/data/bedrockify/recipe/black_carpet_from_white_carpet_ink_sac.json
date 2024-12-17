@@ -7,12 +7,8 @@
     "###"
   ],
   "key": {
-    "#": {
-      "item": "minecraft:white_carpet"
-    },
-    "$": {
-      "item": "minecraft:ink_sac"
-    }
+    "#": "minecraft:white_carpet",
+    "$": "minecraft:ink_sac"
   },
   "result": {
     "count": 8,

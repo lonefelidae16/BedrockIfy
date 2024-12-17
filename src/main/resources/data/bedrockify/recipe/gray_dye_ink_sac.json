@@ -1,12 +1,8 @@
 {
   "type": "minecraft:crafting_shapeless",
   "ingredients": [
-    {
-      "item": "minecraft:ink_sac"
-    },
-    {
-      "item": "minecraft:white_dye"
-    }
+    "minecraft:ink_sac",
+    "minecraft:white_dye"
   ],
   "result": {
     "count": 2,

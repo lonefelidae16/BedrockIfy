@@ -13,7 +13,7 @@ import net.minecraft.util.math.MathHelper;
 import java.io.InputStream;
 
 public class SheepSkinResource implements SimpleSynchronousResourceReloadListener {
-    public static Identifier TEXTURE_SHEARED = null;
+    public static final Identifier TEXTURE_SHEARED = Identifier.of(Bedrockify.MOD_ID, "sheep_sheared");
 
     private static final Identifier TEXTURE_SHEEP_SKIN = Identifier.of("textures/entity/sheep/sheep.png");
     /**
@@ -47,22 +47,22 @@ public class SheepSkinResource implements SimpleSynchronousResourceReloadListene
                 // Extract the White pixels without face.
                 for (int x = 0; x < nativeImage.getWidth(); x++) {
                     for (int y = 0; y < nativeImage.getHeight(); y++) {
-                        final int abgr = nativeImage.getColor(x, y);
-                        final double b = (abgr >> 16 & 0xFF) / 255.;
-                        final double g = (abgr >> 8 & 0xFF) / 255.;
-                        final double r = (abgr & 0xFF) / 255.;
+                        final int arbg = nativeImage.getColorArgb(x, y);
+                        final double r = (arbg >> 16 & 0xFF) / 255.;
+                        final double b = (arbg >> 8 & 0xFF) / 255.;
+                        final double g = (arbg & 0xFF) / 255.;
                         final double[] hsv = rgb2hsv(r, g, b);
                         if (!isInFaceRegion(x / imageWidthMul, y / imageHeightMul) && isPixelMostlyWhite(hsv)) {
-                            nativeImage.setColor(x, y, abgr);
+                            nativeImage.setColorArgb(x, y, arbg);
                         } else {
-                            nativeImage.setColor(x, y, 0);
+                            nativeImage.setColorArgb(x, y, 0);
                         }
                     }
                 }
 
                 // Register the extracted texture.
                 final NativeImageBackedTexture texture = new NativeImageBackedTexture(nativeImage);
-                TEXTURE_SHEARED = MinecraftClient.getInstance().getTextureManager().registerDynamicTexture("sheep_sheared", texture);
+                MinecraftClient.getInstance().getTextureManager().registerTexture(TEXTURE_SHEARED, texture);
             } catch (Throwable ex) {
                 BedrockifyClient.LOGGER.error("[%s] Unable to extract sheep texture.".formatted(Bedrockify.class.getSimpleName()), ex);
             }

@@ -2,14 +2,11 @@
   "type": "minecraft:crafting_shapeless",
   "group": "wool",
   "ingredients": [
-    {
-      "item": "minecraft:ink_sac"
-    },
-    {
-      "tag": "minecraft:wool"
-    }
+    "minecraft:ink_sac",
+    "#minecraft:wool"
   ],
   "result": {
-    "id": "minecraft:black_wool"
+    "id": "minecraft:black_wool",
+    "count": 1
   }
 }

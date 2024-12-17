@@ -2,14 +2,11 @@
   "type": "minecraft:crafting_shapeless",
   "group": "dyed_bed",
   "ingredients": [
-    {
-      "tag": "minecraft:beds"
-    },
-    {
-      "item": "minecraft:lapis_lazuli"
-    }
+    "#minecraft:beds",
+    "minecraft:lapis_lazuli"
   ],
   "result": {
-    "id": "minecraft:blue_bed"
+    "id": "minecraft:blue_bed",
+    "count": 1
   }
 }

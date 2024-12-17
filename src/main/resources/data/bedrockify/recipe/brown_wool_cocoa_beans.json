@@ -2,14 +2,11 @@
   "type": "minecraft:crafting_shapeless",
   "group": "wool",
   "ingredients": [
-    {
-      "item": "minecraft:cocoa_beans"
-    },
-    {
-      "tag": "minecraft:wool"
-    }
+    "minecraft:cocoa_beans",
+    "#minecraft:wool"
   ],
   "result": {
-    "id": "minecraft:brown_wool"
+    "id": "minecraft:brown_wool",
+    "count": 1
   }
 }

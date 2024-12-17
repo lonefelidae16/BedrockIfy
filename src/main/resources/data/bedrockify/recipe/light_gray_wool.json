@@ -2,14 +2,11 @@
   "type": "minecraft:crafting_shapeless",
   "group": "wool",
   "ingredients": [
-    {
-      "item": "minecraft:light_gray_dye"
-    },
-    {
-      "tag": "minecraft:wool"
-    }
+    "minecraft:light_gray_dye",
+    "#minecraft:wool"
   ],
   "result": {
-    "id": "minecraft:light_gray_wool"
+    "id": "minecraft:light_gray_wool",
+    "count": 1
   }
 }

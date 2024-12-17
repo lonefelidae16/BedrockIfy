@@ -7,12 +7,8 @@
     "###"
   ],
   "key": {
-    "#": {
-      "item": "minecraft:terracotta"
-    },
-    "X": {
-      "item": "minecraft:bone_meal"
-    }
+    "#": "minecraft:terracotta",
+    "X": "minecraft:bone_meal"
   },
   "result": {
     "count": 8,

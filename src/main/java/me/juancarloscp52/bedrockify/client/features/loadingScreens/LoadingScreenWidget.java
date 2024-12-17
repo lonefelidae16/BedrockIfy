@@ -1,12 +1,13 @@
 package me.juancarloscp52.bedrockify.client.features.loadingScreens;
 
-import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
 import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.font.TextRenderer;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.LogoDrawer;
+import net.minecraft.client.render.RenderLayer;
 import net.minecraft.text.OrderedText;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
@@ -14,6 +15,7 @@ import net.minecraft.util.math.MathHelper;
 
 import java.util.List;
 import java.util.Random;
+import java.util.Set;
 
 
 public class LoadingScreenWidget {
@@ -22,7 +24,7 @@ public class LoadingScreenWidget {
     private static final int TIPS_NUM = 107;
     private final Identifier WIDGET_TEXTURE = Identifier.of("bedrockify", "textures/gui/bedrockify_widgets.png");
     private Text tip;
-    private static final List<Integer> EXCLUDED_TIPS = Lists.asList(15,new Integer[]{23,28,29,32,33,34,35,62});
+    private static final Set<Integer> EXCLUDED_TIPS = Sets.newHashSet(15,23,28,29,32,33,34,35,62);
     private long lastTipUpdate = 0;
     private final ExternalLoadingTips externalLoadingTips;
     private final LogoDrawer logoDrawer;
@@ -88,7 +90,7 @@ public class LoadingScreenWidget {
     private void renderLoadingWidget(DrawContext drawContext, int x, int y) {
         RenderSystem.enableBlend();
         RenderSystem.blendFunc(GlStateManager.SrcFactor.SRC_ALPHA, GlStateManager.DstFactor.ONE_MINUS_SRC_ALPHA);
-        drawContext.drawTexture(WIDGET_TEXTURE, x - 256 / 2, y - 89 / 2, 0, 0, 256, 89);
+        drawContext.drawTexture(RenderLayer::getGuiTextured, WIDGET_TEXTURE, x - 256 / 2, y - 89 / 2, 0, 0, 256, 89, 256, 256);
     }
 
 
@@ -116,9 +118,9 @@ public class LoadingScreenWidget {
 
     private void renderLoadingBar(DrawContext drawContext, int x, int y, int progress) {
         int barProgress = (int) ((MathHelper.clamp(progress,0,100)/100.0f) * 223.0f);
-        drawContext.drawTexture(WIDGET_TEXTURE, x - 111, y + 26, 0, 89, 222, 5);
+        drawContext.drawTexture(RenderLayer::getGuiTextured, WIDGET_TEXTURE, x - 111, y + 26, 0, 89, 222, 5, 256, 256);
         if (barProgress > 0)
-            drawContext.drawTexture(WIDGET_TEXTURE, x - 111, y + 26, 0, 94, barProgress, 5);
+            drawContext.drawTexture(RenderLayer::getGuiTextured, WIDGET_TEXTURE, x - 111, y + 26, 0, 94, barProgress, 5, 256, 256);
     }
 
 }

@@ -1,50 +1,67 @@
 package me.juancarloscp52.bedrockify.mixin.common.features.recipes;
 
-import com.google.gson.JsonElement;
+import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
 import me.juancarloscp52.bedrockify.Bedrockify;
-import net.minecraft.recipe.Recipe;
-import net.minecraft.recipe.RecipeManager;
-import net.minecraft.resource.ResourceManager;
+import net.minecraft.recipe.RecipeEntry;
+import net.minecraft.recipe.ServerRecipeManager;
 import net.minecraft.util.Identifier;
-import net.minecraft.util.profiler.Profiler;
 import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.Shadow;
+import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
-import org.spongepowered.asm.mixin.injection.Inject;
-import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+import org.spongepowered.asm.mixin.injection.ModifyArg;
 
-import java.util.*;
+import java.util.List;
+import java.util.Set;
 
-@Mixin(RecipeManager.class)
+@Mixin(ServerRecipeManager.class)
 public abstract class RecipeManagerMixin {
 
-    @Shadow public abstract Optional<? extends Recipe<?>> get(Identifier id);
+    @Unique
+    private static Identifier bedrockify$getIdFromRecipeEntry(RecipeEntry<?> entry) {
+        return entry.id().getValue();
+    }
 
-    @Inject(method = "apply(Ljava/util/Map;Lnet/minecraft/resource/ResourceManager;Lnet/minecraft/util/profiler/Profiler;)V", at=@At("HEAD"))
-    public void applyRecipes(Map<Identifier, JsonElement> map, ResourceManager resourceManager, Profiler profiler, CallbackInfo info){
-        HashMap<Identifier, JsonElement> bedrockifyRecipes = new HashMap<>();
-        Iterator<Map.Entry<Identifier, JsonElement>> mapIterator = map.entrySet().iterator();
+    @ModifyArg(method = "prepare(Lnet/minecraft/resource/ResourceManager;Lnet/minecraft/util/profiler/Profiler;)Lnet/minecraft/recipe/PreparedRecipes;", at=@At(value = "INVOKE", target = "Lnet/minecraft/recipe/PreparedRecipes;of(Ljava/lang/Iterable;)Lnet/minecraft/recipe/PreparedRecipes;"), index = 0)
+    public Iterable<RecipeEntry<?>> prepareRecipes(Iterable<RecipeEntry<?>> original){
+        final List<RecipeEntry<?>> editable = Lists.newArrayList(original);
+        final var editableIter = editable.iterator();
 
-        //Recipes that won't be substituted
-        final List<String> exceptions = Arrays.asList("dark_prismarine_extra", "black_concrete_powder_ink_sac", "white_concrete_powder_bone_meal", "brown_concrete_powder_cocoa_beans", "blue_concrete_powder_lapis_lazuli",
-                "white_wool_from_colored", "white_wool_bone_meal","black_wool_ink_sac", "blue_wool_lapis_lazuli", "brown_wool_cocoa_beans",
-                "black_bed_from_white_bed_ink_sac","blue_bed_from_white_bed_lapis_lazuli", "brown_bed_from_white_bed_cocoa_beans", "white_bed_from_white_bed", "white_bed_from_white_bed_bone_meal",
-                "black_carpet_from_white_carpet_ink_sac", "blue_carpet_from_white_carpet", "brown_carpet_from_white_carpet_cocoa_beans",
-                "string_from_cobweb", "white_terracotta_bone_meal", "black_terracotta_ink_sac", "brown_terracotta_cocoa_beans", "blue_terracotta_lapis_lazuli",
-                "white_stained_glass_bone_meal", "blue_stained_glass_lapis_lazuli", "black_stained_glass_ink_sac", "brown_stained_glass_cocoa_beans",
-                "black_stained_glass_pane_from_glass_pane_ink_sac", "blue_stained_glass_pane_from_glass_pane_lapis_lazuli", "brown_stained_glass_pane_from_glass_pane_cocoa_beans", "white_stained_glass_pane_from_glass_pane_bone_meal",
-                "lime_dye_with_bone_meal", "pink_dye_from_red_dye_bone_meal", "light_gray_dye_from_gray_dye_bone_meal", "light_gray_dye_from_black_dye_bone_meal", "purple_dye_from_lapis_lazuli", "cyan_dye_from_lapis_lazuli", "light_blue_dye_from_blue_dye_bone_meal", "light_blue_dye_from_lapis_lazuli_bone_meal", "light_blue_dye_from_lapis_lazuli_white_dye",
-                "magenta_dye_from_lapis_lazuli_red_pink", "magenta_dye_from_blue_red_bone_meal_dye", "magenta_dye_from_lapis_lazuli_red_bone_meal_dye", "magenta_dye_from_lapis_lazuli_red_white_dye", "gray_dye_ink_sac","gray_dye_ink_sac_bone_meal","gray_dye_bone_meal");
-        while (mapIterator.hasNext()){
-            Map.Entry<Identifier, JsonElement> elem = mapIterator.next();
-            if(elem.getKey().getNamespace().equals("bedrockify") && (!exceptions.contains(elem.getKey().getPath()) || !Bedrockify.getInstance().settings.isBedrockRecipesEnabled())){
-                if(Bedrockify.getInstance().settings.isBedrockRecipesEnabled())
-                    bedrockifyRecipes.put(Identifier.of("minecraft", elem.getKey().getPath()), elem.getValue());
-                mapIterator.remove();
+        final boolean bBERecipeEnabled = Bedrockify.getInstance().settings.isBedrockRecipesEnabled();
+
+        // --- Procedure of Recipe modification.
+
+        // namespace equals ${Bedrockify.MOD_ID}
+        final Set<String> bedrockifyRecipeIds = Sets.newHashSet(
+                editable.stream()
+                        .filter(entry -> bedrockify$getIdFromRecipeEntry(entry).getNamespace().equals(Bedrockify.MOD_ID))
+                        .map(entry -> bedrockify$getIdFromRecipeEntry(entry).getPath())
+                        .toList()
+        );
+
+        // Identifier#path contains in both vanilla and bedrockify
+        final Set<String> moddedRecipeIds = Sets.newHashSet(
+                editable.stream()
+                        .filter(entry -> {
+                            final Identifier id = bedrockify$getIdFromRecipeEntry(entry);
+                            return id.getNamespace().equals(Identifier.DEFAULT_NAMESPACE) && bedrockifyRecipeIds.contains(id.getPath());
+                        })
+                        .map(entry -> bedrockify$getIdFromRecipeEntry(entry).getPath())
+                        .toList()
+        );
+
+        // Process all the Recipes.
+        while (editableIter.hasNext()) {
+            var elem = editableIter.next();
+            final Identifier recipeId = elem.id().getValue();
+            final boolean bBERecipeIgnore = !bBERecipeEnabled && recipeId.getNamespace().equals(Bedrockify.MOD_ID);
+            final boolean bConflictedVanillaRecipe = bBERecipeEnabled && moddedRecipeIds.contains(recipeId.getPath()) && recipeId.getNamespace().equals(Identifier.DEFAULT_NAMESPACE);
+
+            if (bBERecipeIgnore || bConflictedVanillaRecipe) {
+                editableIter.remove();
             }
         }
-        for(Map.Entry<Identifier,JsonElement> elem: bedrockifyRecipes.entrySet()){
-            map.replace(elem.getKey(),elem.getValue());
-        }
+
+        return editable;
     }
 }

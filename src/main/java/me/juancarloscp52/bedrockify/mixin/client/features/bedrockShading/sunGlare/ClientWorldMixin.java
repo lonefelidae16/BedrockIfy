@@ -6,6 +6,7 @@ import me.juancarloscp52.bedrockify.client.BedrockifyClient;
 import me.juancarloscp52.bedrockify.client.features.bedrockShading.BedrockSunGlareShading;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.world.ClientWorld;
+import net.minecraft.util.math.ColorHelper;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
 import org.spongepowered.asm.mixin.Final;
@@ -23,9 +24,8 @@ public abstract class ClientWorldMixin {
      *
      * @return modified sky color
      */
-    //@Inject(method = "getSkyColor", at = @At("RETURN"), cancellable = true)
     @ModifyReturnValue(method = "getSkyColor", at = @At("RETURN"))
-    private Vec3d bedrockify$modifySkyColor(Vec3d original, @Local(ordinal = 0, argsOnly = true) float tickDelta) {
+    private int bedrockify$modifySkyColor(int original, @Local(ordinal = 0, argsOnly = true) float tickDelta) {
         final BedrockSunGlareShading sunGlareShading = BedrockifyClient.getInstance().bedrockSunGlareShading;
         if (!sunGlareShading.shouldApplyShading() || this.client.world == null) {
             return original;
@@ -42,13 +42,16 @@ public abstract class ClientWorldMixin {
         final float multiplierRed = MathHelper.clampedLerp(sunGlareShading.getSkyAttenuation()-0.16f, 1f, angleDiff + rainGradient);
         final float multiplierGreen = MathHelper.clampedLerp(sunGlareShading.getSkyAttenuation()-0.06f, 1f, angleDiff + rainGradient);
 
-        return original.multiply(multiplierRed, multiplierGreen, multiplierBlue);
+        Vec3d color = Vec3d.unpackRgb(original);
+
+        return ColorHelper.getArgb(color.multiply(multiplierRed, multiplierGreen, multiplierBlue));
     }
 
     @ModifyReturnValue(method = "getCloudsColor", at = @At("RETURN"))
-    private Vec3d bedrockify$modifyCloudsColor(Vec3d original) {
+    private int bedrockify$modifyCloudsColor(int original) {
         BedrockSunGlareShading sunGlareShading = BedrockifyClient.getInstance().bedrockSunGlareShading;
-        return original.multiply(MathHelper.clampedLerp(0.8d, 1.0d, sunGlareShading.getSunRadiusDelta()));
+        Vec3d color = Vec3d.unpackRgb(original);
+        return ColorHelper.getArgb(color.multiply(MathHelper.clampedLerp(0.8d, 1.0d, sunGlareShading.getSunRadiusDelta())));
     }
 
 }

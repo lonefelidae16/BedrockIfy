@@ -2,14 +2,11 @@
   "type": "minecraft:crafting_shapeless",
   "group": "dyed_bed",
   "ingredients": [
-    {
-      "tag": "minecraft:beds"
-    },
-    {
-      "item": "minecraft:gray_dye"
-    }
+    "#minecraft:beds",
+    "minecraft:gray_dye"
   ],
   "result": {
-    "id": "minecraft:gray_bed"
+    "id": "minecraft:gray_bed",
+    "count": 1
   }
 }

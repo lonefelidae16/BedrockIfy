@@ -3,18 +3,15 @@
   "category": "misc",
   "group": "boat",
   "key": {
-    "#": {
-      "item": "minecraft:mangrove_planks"
-    },
-    "S": {
-      "item": "minecraft:wooden_shovel"
-    }
+    "#": "minecraft:mangrove_planks",
+    "S": "minecraft:wooden_shovel"
   },
   "pattern": [
     "#S#",
     "###"
   ],
   "result": {
-    "id": "minecraft:mangrove_boat"
+    "id": "minecraft:mangrove_boat",
+    "count": 1
   }
 }

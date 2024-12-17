@@ -7,12 +7,8 @@
     "###"
   ],
   "key": {
-    "#": {
-      "item": "minecraft:terracotta"
-    },
-    "X": {
-      "item": "minecraft:cocoa_beans"
-    }
+    "#": "minecraft:terracotta",
+    "X": "minecraft:cocoa_beans"
   },
   "result": {
     "count": 8,

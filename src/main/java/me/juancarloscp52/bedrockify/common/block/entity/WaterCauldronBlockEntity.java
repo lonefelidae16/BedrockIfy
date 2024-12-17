@@ -71,11 +71,10 @@ public class WaterCauldronBlockEntity extends BlockEntity {
         var potion = optionalPotion.get();
         this.potionTypeId = Registries.ITEM.getId(potionItem.getItem());
         this.fluidId = Registries.POTION.getId(potion.value());
-        this.setTintColor(PotionContentsComponent.getColor(potion));
+        this.setTintColor(component.getColor());
     }
 
-    public <T extends DyeItem> void blendDyeItem(T item) {
-        final int itemColor = ColorBlenderHelper.fromDyeItem(item);
+    public void setDyeColor(int itemColor) {
         final int resultColor;
         if (Objects.equals(this.fluidId, Registries.BLOCK.getId(BedrockCauldronBlocks.COLORED_WATER_CAULDRON))) {
             resultColor = ColorBlenderHelper.blendColors(this.getTintColor(), itemColor);
@@ -97,8 +96,11 @@ public class WaterCauldronBlockEntity extends BlockEntity {
      */
     private void checkExactIds() {
         boolean valid = false;
+        // These branches could be simpler, but please do not simplify them.
+        // Reason: To maintain forward compatibility from Bedrockify v1.7
+        // Check commit e37f57564d736d455e4a06dcdce259ea0be377de
         if (Registries.ITEM.get(this.getFluidId()) instanceof DyeItem dyeItem) {
-            this.blendDyeItem(dyeItem);
+            this.setDyeColor(ColorBlenderHelper.fromDyeItem(dyeItem));
             valid = true;
         } else if (Registries.BLOCK.get(this.getFluidId()) instanceof ColoredWaterCauldronBlock) {
             valid = true;
@@ -106,7 +108,7 @@ public class WaterCauldronBlockEntity extends BlockEntity {
             var potionEntry = Registries.POTION.getEntry(this.getFluidId());
             if (potionEntry.isPresent()) {
                 valid = true;
-                this.setTintColor(PotionContentsComponent.getColor(potionEntry.get()));
+                this.setTintColor(Objects.requireNonNull(PotionContentsComponent.createStack(Items.GLASS_BOTTLE, potionEntry.get()).get(DataComponentTypes.POTION_CONTENTS)).getColor());
             }
         }
         if (!valid) {

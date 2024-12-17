@@ -8,7 +8,7 @@ public class ContainerTooltip extends Tooltip {
     String translationKey;
 
     public ContainerTooltip(ItemStack item){
-        this.translationKey = item.getTranslationKey();
+        this.translationKey = item.getItem().getTranslationKey();
         this.primaryValue = item.getCount();
     }
 

@@ -7,15 +7,12 @@
     "###"
   ],
   "key": {
-    "#": {
-      "item": "minecraft:bamboo_planks"
-    },
-    "S": {
-      "item": "minecraft:wooden_shovel"
-    }
+    "#": "minecraft:bamboo_planks",
+    "S": "minecraft:wooden_shovel"
   },
   "result": {
-    "id": "minecraft:bamboo_raft"
+    "id": "minecraft:bamboo_raft",
+    "count": 1
   },
   "show_notification": true
 }

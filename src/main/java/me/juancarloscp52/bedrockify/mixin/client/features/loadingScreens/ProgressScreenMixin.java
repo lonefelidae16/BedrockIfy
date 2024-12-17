@@ -27,7 +27,7 @@ public class ProgressScreenMixin extends Screen {
      */
     @Inject(method = "render", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/screen/Screen;render(Lnet/minecraft/client/gui/DrawContext;IIF)V"), cancellable = true)
     public void renderLoadScreen(DrawContext context, int mouseX, int mouseY, float delta, CallbackInfo info) {
-        if(!BedrockifyClient.getInstance().settings.isLoadingScreenEnabled()){
+        if(!BedrockifyClient.getInstance().settings.isLoadingScreenEnabled() || client == null){
             return;
         }
         super.render(context, mouseX, mouseY, delta);

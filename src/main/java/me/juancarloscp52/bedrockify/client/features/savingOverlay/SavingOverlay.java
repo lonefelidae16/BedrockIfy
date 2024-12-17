@@ -5,6 +5,7 @@ import me.juancarloscp52.bedrockify.client.BedrockifyClient;
 import me.juancarloscp52.bedrockify.client.BedrockifyClientSettings;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.DrawContext;
+import net.minecraft.client.render.RenderLayer;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.MathHelper;
 
@@ -23,10 +24,10 @@ public class SavingOverlay{
             RenderSystem.defaultBlendFunc();
             RenderSystem.setShaderColor(1,1,1,BedrockifyClient.getInstance().hudOpacity.getHudOpacity(false));
             // Draw chest
-            drawContext.drawTexture(WIDGET_TEXTURE, client.getWindow().getScaledWidth()-(21+settings.getScreenSafeArea()), 19 + settings.getScreenSafeArea(), 0, 99, 16, 17);
+            drawContext.drawTexture(RenderLayer::getGuiTextured, WIDGET_TEXTURE, client.getWindow().getScaledWidth()-(21+settings.getScreenSafeArea()), 19 + settings.getScreenSafeArea(), 0, 99, 16, 17, 256, 256);
             // Draw arrow
             renderTimer+= BedrockifyClient.getInstance().deltaTime*0.000000001f;
-            drawContext.drawTexture(WIDGET_TEXTURE, client.getWindow().getScaledWidth()-(19+settings.getScreenSafeArea()), 5 + settings.getScreenSafeArea() + MathHelper.floor(MathHelper.abs(MathHelper.sin(renderTimer * 3.1415926F) * 6)), 16, 100, 12, 15);
+            drawContext.drawTexture(RenderLayer::getGuiTextured, WIDGET_TEXTURE, client.getWindow().getScaledWidth()-(19+settings.getScreenSafeArea()), 5 + settings.getScreenSafeArea() + MathHelper.floor(MathHelper.abs(MathHelper.sin(renderTimer * 3.1415926F) * 6)), 16, 100, 12, 15, 256, 256);
             RenderSystem.setShaderColor(1,1,1,1);
             RenderSystem.disableBlend();
         }

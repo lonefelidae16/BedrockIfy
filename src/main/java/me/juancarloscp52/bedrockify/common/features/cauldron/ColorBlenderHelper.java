@@ -31,8 +31,12 @@ public final class ColorBlenderHelper {
         DyedColorComponent dyedColorComponent = base.get(DataComponentTypes.DYED_COLOR);
 
         final int[] blendArray;
-        blendArray = Arrays.copyOf(colors, colors.length + 1);
-        blendArray[blendArray.length - 1] = DyedColorComponent.getColor(base, 0xFFA06540);
+        if (dyedColorComponent != null) {
+            blendArray = Arrays.copyOf(colors, colors.length + 1);
+            blendArray[blendArray.length - 1] = DyedColorComponent.getColor(base, 0xFFA06540);
+        } else {
+            blendArray = colors;
+        }
 
         boolean showInTooltip = dyedColorComponent == null || dyedColorComponent.showInTooltip();
         base.set(DataComponentTypes.DYED_COLOR, new DyedColorComponent(blendColors(blendArray), showInTooltip));

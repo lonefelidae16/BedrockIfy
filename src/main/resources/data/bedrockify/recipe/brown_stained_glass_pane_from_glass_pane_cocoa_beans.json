@@ -7,12 +7,8 @@
     "###"
   ],
   "key": {
-    "#": {
-      "item": "minecraft:glass_pane"
-    },
-    "$": {
-      "item": "minecraft:cocoa_beans"
-    }
+    "#": "minecraft:glass_pane",
+    "$": "minecraft:cocoa_beans"
   },
   "result": {
     "count": 8,

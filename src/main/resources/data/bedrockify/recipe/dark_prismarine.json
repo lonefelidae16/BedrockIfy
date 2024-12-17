@@ -7,14 +7,11 @@
     "SSS"
   ],
   "key": {
-    "S": {
-      "item": "minecraft:prismarine_shard"
-    },
-    "I": {
-      "item": "minecraft:black_dye"
-    }
+    "S": "minecraft:prismarine_shard",
+    "I": "minecraft:black_dye"
   },
   "result": {
-    "id": "minecraft:dark_prismarine"
+    "id": "minecraft:dark_prismarine",
+    "count": 1
   }
 }

@@ -7,12 +7,8 @@
     "###"
   ],
   "key": {
-    "#": {
-      "item": "minecraft:terracotta"
-    },
-    "X": {
-      "item": "minecraft:ink_sac"
-    }
+    "#": "minecraft:terracotta",
+    "X": "minecraft:ink_sac"
   },
   "result": {
     "count": 8,

@@ -6,14 +6,11 @@
     "###"
   ],
   "key": {
-    "#": {
-      "item": "minecraft:jungle_planks"
-    },
-    "S": {
-      "item": "minecraft:wooden_shovel"
-    }
+    "#": "minecraft:jungle_planks",
+    "S": "minecraft:wooden_shovel"
   },
   "result": {
-    "id": "minecraft:jungle_boat"
+    "id": "minecraft:jungle_boat",
+    "count": 1
   }
 }

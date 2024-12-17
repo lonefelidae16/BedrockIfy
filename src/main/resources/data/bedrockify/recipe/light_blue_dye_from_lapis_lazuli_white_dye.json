@@ -2,12 +2,8 @@
   "type": "minecraft:crafting_shapeless",
   "group": "light_blue_dye",
   "ingredients": [
-    {
-      "item": "minecraft:lapis_lazuli"
-    },
-    {
-      "item": "minecraft:white_dye"
-    }
+    "minecraft:lapis_lazuli",
+    "minecraft:white_dye"
   ],
   "result": {
     "count": 2,

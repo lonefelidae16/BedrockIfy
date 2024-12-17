@@ -31,6 +31,7 @@ import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.option.KeyBinding;
 import net.minecraft.client.util.InputUtil;
+import net.minecraft.entity.EntityPose;
 import net.minecraft.network.packet.c2s.play.ClientCommandC2SPacket;
 import net.minecraft.resource.ResourceType;
 import org.apache.logging.log4j.LogManager;
@@ -129,11 +130,12 @@ public class BedrockifyClient implements ClientModInitializer {
             }
 
             // Stop elytra flying by pressing space
-            if(null != client.player && settings.elytraStop && client.player.isFallFlying() && timeFlying > 10 && client.options.jumpKey.isPressed()){
-                client.player.stopFallFlying();
+            if(null != client.player && settings.elytraStop && client.player.getPose().equals(EntityPose.GLIDING) && timeFlying > 10 && client.options.jumpKey.isPressed()){
+                client.player.getAbilities().flying = false;
+                client.player.sendAbilitiesUpdate();
                 client.player.networkHandler.sendPacket(new ClientCommandC2SPacket(client.player, ClientCommandC2SPacket.Mode.START_FALL_FLYING));
             }
-            if(null != client.player && client.player.isFallFlying() && !client.options.jumpKey.isPressed())
+            if(null != client.player && client.player.getPose().equals(EntityPose.GLIDING) && !client.options.jumpKey.isPressed())
                 timeFlying++;
             else
                 timeFlying = 0;

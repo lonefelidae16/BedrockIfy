@@ -7,12 +7,8 @@
     "###"
   ],
   "key": {
-    "#": {
-      "item": "minecraft:glass_pane"
-    },
-    "$": {
-      "item": "minecraft:lapis_lazuli"
-    }
+    "#": "minecraft:glass_pane",
+    "$": "minecraft:lapis_lazuli"
   },
   "result": {
     "count": 8,

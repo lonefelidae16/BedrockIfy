@@ -27,9 +27,9 @@ import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.SoundCategory;
 import net.minecraft.sound.SoundEvents;
 import net.minecraft.stat.Stats;
+import net.minecraft.util.ActionResult;
 import net.minecraft.util.Hand;
 import net.minecraft.util.Identifier;
-import net.minecraft.util.ItemActionResult;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
@@ -48,11 +48,11 @@ public interface BedrockCauldronBehavior {
 
     CauldronBehavior DYE_ITEM_BY_COLORED_WATER = (state, world, pos, player, hand, stack) -> {
         if (state == null || world == null || pos == null || !Bedrockify.getInstance().settings.bedrockCauldron) {
-            return ItemActionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
+            return ActionResult.PASS_TO_DEFAULT_BLOCK_ACTION;
         }
 
         if (!stack.isIn(ItemTags.DYEABLE)) {
-            return ItemActionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
+            return ActionResult.PASS_TO_DEFAULT_BLOCK_ACTION;
         }
 
         Optional<WaterCauldronBlockEntity> entity = retrieveCauldronEntity(world, pos);
@@ -69,30 +69,33 @@ public interface BedrockCauldronBehavior {
             world.emitGameEvent(null, GameEvent.FLUID_PICKUP, pos);
         }
 
-        return ItemActionResult.success(world.isClient);
+        return ActionResult.SUCCESS;
     };
 
     CauldronBehavior DYE_WATER = (state, world, pos, player, hand, stack) -> {
         if (state == null || world == null || pos == null || !Bedrockify.getInstance().settings.bedrockCauldron) {
-            return ItemActionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
+            return ActionResult.PASS_TO_DEFAULT_BLOCK_ACTION;
         }
 
         Item item = stack.getItem();
         if (!(item instanceof DyeItem dyeItem)) {
-            return ItemActionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
+            return ActionResult.PASS_TO_DEFAULT_BLOCK_ACTION;
         }
 
         Optional<WaterCauldronBlockEntity> entity = world.getBlockEntity(pos, BedrockCauldronBlocks.WATER_CAULDRON_ENTITY);
         final int level;
+        final int nextColor;
         if (entity.isPresent()) {
             // The Cauldron already has color.
             final int currentColor = entity.get().getTintColor();
-            if (ColorBlenderHelper.blendColors(currentColor, ColorBlenderHelper.fromDyeItem(dyeItem)) == currentColor) {
-                return ItemActionResult.SUCCESS;
+            nextColor = ColorBlenderHelper.blendColors(currentColor, ColorBlenderHelper.fromDyeItem(dyeItem));
+            if (nextColor == currentColor) {
+                return ActionResult.SUCCESS;
             }
             level = state.get(ColoredWaterCauldronBlock.LEVEL);
         } else {
             // Otherwise it may be Water Cauldron.
+            nextColor = ColorBlenderHelper.fromDyeItem(dyeItem);
             level = ColoredWaterCauldronBlock.getLevelFromWaterCauldronState(state);
         }
 
@@ -108,10 +111,10 @@ public interface BedrockCauldronBehavior {
             world.emitGameEvent(null, GameEvent.BLOCK_CHANGE, pos);
         }
         world.getBlockEntity(pos, BedrockCauldronBlocks.WATER_CAULDRON_ENTITY).ifPresent(blockEntity -> {
-            blockEntity.blendDyeItem(dyeItem);
+            blockEntity.setDyeColor(nextColor);
         });
 
-        return ItemActionResult.success(world.isClient);
+        return ActionResult.SUCCESS;
     };
 
     /**
@@ -119,22 +122,22 @@ public interface BedrockCauldronBehavior {
      */
     CauldronBehavior PLACE_WATER_BY_POTION = (state, world, pos, player, hand, stack) -> {
         if (state == null || world == null || pos == null || !Bedrockify.getInstance().settings.bedrockCauldron) {
-            return ItemActionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
+            return ActionResult.PASS_TO_DEFAULT_BLOCK_ACTION;
         }
         var component = stack.get(DataComponentTypes.POTION_CONTENTS);
         if (component != null && !component.matches(Potions.WATER)) {
-            return ItemActionResult.SUCCESS;
+            return ActionResult.SUCCESS;
         }
 
         final int nextLevel;
         if (state.isOf(Blocks.WATER_CAULDRON)) {
             if (state.get(LeveledCauldronBlock.LEVEL) >= LeveledCauldronBlock.MAX_LEVEL) {
-                return ItemActionResult.SUCCESS;
+                return ActionResult.SUCCESS;
             }
             nextLevel = state.cycle(LeveledCauldronBlock.LEVEL).get(LeveledCauldronBlock.LEVEL);
         } else if (state.isOf(BedrockCauldronBlocks.COLORED_WATER_CAULDRON)) {
             if (state.get(ColoredWaterCauldronBlock.LEVEL) >= ColoredWaterCauldronBlock.MAX_LEVEL) {
-                return ItemActionResult.SUCCESS;
+                return ActionResult.SUCCESS;
             }
             nextLevel = Math.min(ColoredWaterCauldronBlock.convertToWaterCauldronLevel(state) + 1, LeveledCauldronBlock.MAX_LEVEL);
         } else {
@@ -151,7 +154,7 @@ public interface BedrockCauldronBehavior {
             world.emitGameEvent(null, GameEvent.FLUID_PLACE, pos);
         }
 
-        return ItemActionResult.success(world.isClient);
+        return ActionResult.SUCCESS;
     };
 
     /**
@@ -159,7 +162,7 @@ public interface BedrockCauldronBehavior {
      */
     CauldronBehavior PICK_POTION_FLUID = (state, world, pos, player, hand, stack) -> {
         if (state == null || world == null || pos == null || !Bedrockify.getInstance().settings.bedrockCauldron) {
-            return ItemActionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
+            return ActionResult.PASS_TO_DEFAULT_BLOCK_ACTION;
         }
 
         Optional<WaterCauldronBlockEntity> entity = retrieveCauldronEntity(world, pos);
@@ -179,17 +182,22 @@ public interface BedrockCauldronBehavior {
         final Item potionType = blockEntity.getPotionType();
         if (!world.isClient) {
             if (!PotionCauldronBlock.tryPickFluid(state, world, pos)) {
-                return ItemActionResult.SUCCESS;
+                return ActionResult.SUCCESS_SERVER;
             }
+            final ItemStack potionStack = PotionContentsComponent.createStack(potionType, potionEntry);
+            if (!potionStack.contains(DataComponentTypes.POTION_CONTENTS)) {
+                return ActionResult.SUCCESS_SERVER;
+            }
+            final int potionColor = Objects.requireNonNull(potionStack.get(DataComponentTypes.POTION_CONTENTS)).getColor();
             player.incrementStat(Stats.USE_CAULDRON);
             player.incrementStat(Stats.USED.getOrCreateStat(item));
-            player.setStackInHand(hand, ItemUsage.exchangeStack(stack, player, PotionContentsComponent.createStack(potionType, potionEntry)));
+            player.setStackInHand(hand, ItemUsage.exchangeStack(stack, player, potionStack));
             world.playSound(null, pos, SoundEvents.ITEM_BOTTLE_FILL, SoundCategory.BLOCKS);
             world.emitGameEvent(null, GameEvent.FLUID_PICKUP, pos);
-            addPotionParticle(world.getBlockState(pos), world, pos, PotionContentsComponent.getColor(potionEntry));
+            addPotionParticle(world.getBlockState(pos), world, pos, potionColor);
         }
 
-        return ItemActionResult.success(world.isClient);
+        return ActionResult.SUCCESS;
     };
 
     /**
@@ -197,25 +205,25 @@ public interface BedrockCauldronBehavior {
      */
     CauldronBehavior PLACE_POTION_FLUID = (state, world, pos, player, hand, stack) -> {
         if (state == null || world == null || pos == null || !Bedrockify.getInstance().settings.bedrockCauldron) {
-            return ItemActionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
+            return ActionResult.PASS_TO_DEFAULT_BLOCK_ACTION;
         }
 
         if (!(stack.getItem() instanceof PotionItem)) {
-            return ItemActionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
+            return ActionResult.PASS_TO_DEFAULT_BLOCK_ACTION;
         }
 
         var component = stack.get(DataComponentTypes.POTION_CONTENTS);
         if (component == null) {
-            return ItemActionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
+            return ActionResult.PASS_TO_DEFAULT_BLOCK_ACTION;
         }
         var optionalPotion = component.potion();
         if (optionalPotion.isEmpty()) {
-            return ItemActionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
+            return ActionResult.PASS_TO_DEFAULT_BLOCK_ACTION;
         }
         var potionEntry = optionalPotion.get();
         if (potionEntry.value().getEffects().isEmpty() && !component.matches(Potions.WATER)) {
             // Prevent to place the fluid of Awkward Potion, Mundane Potion, etc.
-            return ItemActionResult.SUCCESS;
+            return ActionResult.SUCCESS;
         }
 
         final BlockState newState;
@@ -236,7 +244,7 @@ public interface BedrockCauldronBehavior {
             // The cauldron is full.
             final int currentLevel = state.get(PotionCauldronBlock.LEVEL);
             if (currentLevel >= PotionCauldronBlock.MAX_LEVEL) {
-                return ItemActionResult.SUCCESS;
+                return ActionResult.SUCCESS_SERVER;
             }
 
             final int nextLevel = Math.min(currentLevel + PotionCauldronBlock.BOTTLE_LEVEL, PotionCauldronBlock.MAX_LEVEL);
@@ -267,7 +275,7 @@ public interface BedrockCauldronBehavior {
             blockEntity.setPotion(processing);
         });
 
-        return ItemActionResult.success(world.isClient);
+        return ActionResult.SUCCESS;
     };
 
     /**
@@ -275,11 +283,11 @@ public interface BedrockCauldronBehavior {
      */
     CauldronBehavior TIPPED_ARROW_WITH_POTION = (state, world, pos, player, hand, stack) -> {
         if (state == null || world == null || pos == null || !Bedrockify.getInstance().settings.bedrockCauldron) {
-            return ItemActionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
+            return ActionResult.PASS_TO_DEFAULT_BLOCK_ACTION;
         }
 
         if (!stack.isOf(Items.ARROW)) {
-            return ItemActionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
+            return ActionResult.PASS_TO_DEFAULT_BLOCK_ACTION;
         }
 
         Optional<WaterCauldronBlockEntity> entity = retrieveCauldronEntity(world, pos);
@@ -299,7 +307,7 @@ public interface BedrockCauldronBehavior {
             // Determine arrow count and fluid level to decrease.
             final int tippedArrowCount = PotionCauldronBlock.getMaxTippedArrowCount(stack, state);
             if (tippedArrowCount <= 0) {
-                return ItemActionResult.SUCCESS;
+                return ActionResult.SUCCESS_SERVER;
             }
             final int consumedFluidLevel = PotionCauldronBlock.getDecLevelByStack(stack, tippedArrowCount);
             final int afterFluidLevel = state.get(PotionCauldronBlock.LEVEL) - consumedFluidLevel;
@@ -341,13 +349,13 @@ public interface BedrockCauldronBehavior {
             world.emitGameEvent(null, GameEvent.FLUID_PICKUP, pos);
         }
 
-        return ItemActionResult.success(world.isClient);
+        return ActionResult.SUCCESS;
     };
 
     CauldronBehavior PICK_COLORED_WATER = (state, world, pos, player, hand, stack) -> {
         if (!world.isClient) {
             if (!ColoredWaterCauldronBlock.tryPickFluid(state, world, pos)) {
-                return ItemActionResult.SUCCESS;
+                return ActionResult.SUCCESS_SERVER;
             }
             Item item = stack.getItem();
             player.setStackInHand(hand, ItemUsage.exchangeStack(stack, player, PotionContentsComponent.createStack(Items.POTION, Potions.WATER)));
@@ -357,7 +365,7 @@ public interface BedrockCauldronBehavior {
             world.emitGameEvent(null, GameEvent.FLUID_PICKUP, pos);
         }
 
-        return ItemActionResult.success(world.isClient);
+        return ActionResult.SUCCESS;
     };
 
     CauldronBehavior FILL_BUCKET_WITH_COLORED_WATER = (state, world, pos, player, hand, stack) -> {
@@ -377,7 +385,8 @@ public interface BedrockCauldronBehavior {
         if (entity.isEmpty()) {
             // Increasing the fluid requires to retrieve the potion.
             Bedrockify.LOGGER.error(
-                    "[%s] something went wrong to get the fluid in cauldron".formatted(Bedrockify.class.getSimpleName()),
+                    "[{}] something went wrong to get the fluid in cauldron",
+                    Bedrockify.class.getSimpleName(),
                     new NullPointerException("RegistryWorldView#getBlockEntity is not present at " + pos));
             return Optional.empty();
         }
@@ -394,14 +403,15 @@ public interface BedrockCauldronBehavior {
         final Potion potion = Registries.POTION.get(potionId);
         if (!Registries.POTION.containsId(potionId) || potion == null) {
             Bedrockify.LOGGER.error(
-                    "[%s] something went wrong to get the potion from Registries".formatted(Bedrockify.class.getSimpleName()),
+                    "[{}] something went wrong to get the potion from Registries",
+                    Bedrockify.class.getSimpleName(),
                     new IllegalStateException("potion has disappeared, maybe the mod is gone?"));
             return Optional.empty();
         }
         return Optional.of(potion);
     }
 
-    static ItemActionResult emptyCauldronFromWrongState(BlockState state, World world, BlockPos pos, PlayerEntity player, Hand hand, ItemStack stack) {
+    static ActionResult emptyCauldronFromWrongState(BlockState state, World world, BlockPos pos, PlayerEntity player, Hand hand, ItemStack stack) {
         return evaporateCauldron(state, world, pos, player, hand, stack, stack.copy());
     }
 
@@ -420,7 +430,7 @@ public interface BedrockCauldronBehavior {
     /**
      * Empties the cauldron by spawning particles and sound.
      */
-    static ItemActionResult evaporateCauldron(BlockState state, World world, BlockPos pos, PlayerEntity player, Hand hand, ItemStack current, ItemStack after) {
+    static ActionResult evaporateCauldron(BlockState state, World world, BlockPos pos, PlayerEntity player, Hand hand, ItemStack current, ItemStack after) {
         if (!world.isClient) {
             final Identifier particleId = Registries.PARTICLE_TYPE.getId(ParticleTypes.POOF);
             for (int i = 0; i < 10; ++i) {

@@ -30,8 +30,8 @@ public abstract class HandledScreenMixin {
     @Shadow
     abstract boolean isPointOverSlot(Slot slot, double pointX, double pointY);
 
-    @Inject(method = "drawSlotHighlight", at = @At("HEAD"), cancellable = true)
-    private static void bedrockify$cancelVanillaHighlight(DrawContext context, int x, int y, int z, CallbackInfo ci) {
+    @Inject(method = {"drawSlotHighlightBack", "drawSlotHighlightFront"}, at = @At("HEAD"), cancellable = true)
+    private static void bedrockify$cancelVanillaHighlight(CallbackInfo ci) {
         BedrockifyClientSettings settings = BedrockifyClient.getInstance().settings;
         if (settings.isSlotHighlightEnabled()) {
             ci.cancel();
@@ -47,7 +47,7 @@ public abstract class HandledScreenMixin {
     /**
      * Draw the current slot in green.
      */
-    @Inject(method = "render", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/screen/ingame/HandledScreen;drawSlot(Lnet/minecraft/client/gui/DrawContext;Lnet/minecraft/screen/slot/Slot;)V"))
+    @Inject(method = "render", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/screen/ingame/HandledScreen;drawSlotHighlightBack(Lnet/minecraft/client/gui/DrawContext;)V"))
     private void bedrockify$customHighlightColor(DrawContext drawContext, int mouseX, int mouseY, float delta, CallbackInfo ci) {
         BedrockifyClientSettings settings = BedrockifyClient.getInstance().settings;
         if (!settings.isSlotHighlightEnabled() || this.currentSlot == null) {

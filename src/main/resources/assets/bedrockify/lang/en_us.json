@@ -191,5 +191,8 @@
   "bedrockify.loadingTips.105": "You can charge a respawn anchor with glowstone.",
   "bedrockify.loadingTips.106": "You can breed hoglins with crimson fungus, but be careful.",
   "bedrockify.loadingTips.107": "Gold is most common in the Nether and in the badlands biome.",
-  "bedrockify.loadingTips.108": "Diorite, you either love it or hate it."
+  "bedrockify.loadingTips.108": "Diorite, you either love it or hate it.",
+
+
+  "menu.generatingLevel": "Generating world"
 }

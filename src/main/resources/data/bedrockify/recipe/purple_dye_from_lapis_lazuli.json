@@ -1,12 +1,8 @@
 {
   "type": "minecraft:crafting_shapeless",
   "ingredients": [
-    {
-      "item": "minecraft:lapis_lazuli"
-    },
-    {
-      "item": "minecraft:red_dye"
-    }
+    "minecraft:lapis_lazuli",
+    "minecraft:red_dye"
   ],
   "result": {
     "count": 2,

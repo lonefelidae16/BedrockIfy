@@ -2,12 +2,8 @@
   "type": "minecraft:crafting_shapeless",
   "group": "light_gray_dye",
   "ingredients": [
-    {
-      "item": "minecraft:gray_dye"
-    },
-    {
-      "item": "minecraft:bone_meal"
-    }
+    "minecraft:gray_dye",
+    "minecraft:bone_meal"
   ],
   "result": {
     "count": 2,

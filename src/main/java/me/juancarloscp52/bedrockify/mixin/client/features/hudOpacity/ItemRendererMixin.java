@@ -10,10 +10,10 @@ import org.spongepowered.asm.mixin.injection.ModifyVariable;
 @Mixin(ItemRenderer.class)
 public abstract class ItemRendererMixin {
     @ModifyVariable(
-            method = "renderItem(Lnet/minecraft/item/ItemStack;Lnet/minecraft/client/render/model/json/ModelTransformationMode;ZLnet/minecraft/client/util/math/MatrixStack;Lnet/minecraft/client/render/VertexConsumerProvider;IILnet/minecraft/client/render/model/BakedModel;)V",
-            at = @At("STORE"), ordinal = 0
+            method = "renderItem(Lnet/minecraft/item/ModelTransformationMode;Lnet/minecraft/client/util/math/MatrixStack;Lnet/minecraft/client/render/VertexConsumerProvider;II[ILnet/minecraft/client/render/model/BakedModel;Lnet/minecraft/client/render/RenderLayer;Lnet/minecraft/client/render/item/ItemRenderState$Glint;)V",
+            at = @At("HEAD")
     )
-    private RenderLayer bedrockify$applyTransparencyForBakedItemModel(RenderLayer original) {
-        return TexturedRenderLayers.getEntityTranslucentCull();
+    private static RenderLayer bedrockify$applyTranslucencyForBakedItemModel(RenderLayer original) {
+        return TexturedRenderLayers.getItemEntityTranslucentCull();
     }
 }
