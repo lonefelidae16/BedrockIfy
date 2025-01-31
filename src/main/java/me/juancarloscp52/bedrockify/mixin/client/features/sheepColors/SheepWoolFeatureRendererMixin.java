@@ -15,6 +15,7 @@ import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.entity.passive.SheepEntity;
 import net.minecraft.util.DyeColor;
 import net.minecraft.util.math.ColorHelper;
+import net.minecraft.util.math.MathHelper;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -35,11 +36,12 @@ public abstract class SheepWoolFeatureRendererMixin extends FeatureRenderer<Shee
         final Model sheepModel = this.getContextModel();
         final int color;
         if (sheepState.customName != null && "jeb_".equals(sheepState.customName.getString())) {
-            final int baseColorId = (int) (sheepState.age / 25 + sheepState.id);
+            final int age = MathHelper.floor(sheepState.age);
+            final int baseColorId = age / 25 + sheepState.id;
             final int colorLength = DyeColor.values().length;
             final int currentColorId = baseColorId % colorLength;
             final int nextColorId = (baseColorId + 1) % colorLength;
-            float gradientDelta = ((sheepState.age % 25) + tickDelta) / 25.0f;
+            float gradientDelta = ((age % 25) + MathHelper.fractionalPart(sheepState.age)) / 25.0f;
             int currentColor = SheepEntity.getRgbColor(DyeColor.byId(currentColorId));
             int nextColor = SheepEntity.getRgbColor(DyeColor.byId(nextColorId));
             color = ColorHelper.lerp(gradientDelta, currentColor, nextColor);
